@@ -108,11 +108,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\lib\suspiciousfile.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\suspiciousfile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\lib\suspiciousfile.h" />
+    <ClInclude Include="src\include\suspiciousfile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

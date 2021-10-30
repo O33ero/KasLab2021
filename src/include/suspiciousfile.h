@@ -15,7 +15,7 @@ public:
 	enum EXTENS type;
 
 
-	suspiciousfile(std::string p, std::string e, enum EXTENS t) {}
+	suspiciousfile(std::string p, std::string e, enum EXTENS t);
 
 };
 

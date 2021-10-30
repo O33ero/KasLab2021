@@ -6,13 +6,13 @@
 #include <filesystem>	// Для прокрутки файлов в директории
 #include <regex>		// Для поиска расширения файла
 
-#include "lib/suspiciousfile.h"
+#include "include/suspiciousfile.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
 	if (argc != 2) {
-		cout << "err";
+		cout << "Too few arguments" << endl;
 	}
 
 	unsigned int TOTAL = 0;
@@ -34,12 +34,11 @@ int main(int argc, char* argv[]) {
 
 
 	string path = "f://AAA//";
-	string p = "a";
 
 	filesystem::directory_iterator fs_iterator;
 	try
 	{
-		filesystem::directory_iterator fs_iterator = filesystem::directory_iterator(p);
+		filesystem::directory_iterator fs_iterator = filesystem::directory_iterator(path);
 	}
 	catch (const exception& ex)
 	{
@@ -47,7 +46,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 	
-	for (const auto& file : fs_iterator) {
+	for (const auto& file : filesystem::directory_iterator(path)) {
 
 		if (file.is_directory()) {
 			continue;
@@ -88,6 +87,11 @@ int main(int argc, char* argv[]) {
 		try
 		{
 			ifstream input(filename, ios::binary);
+			string line;
+
+			while (getline(input, line)) {
+				cout << line << endl;
+			}
 			
 		}
 		catch (const std::exception&)
@@ -98,6 +102,11 @@ int main(int argc, char* argv[]) {
 
 	}
 
+	cout << "TOTAL = " << TOTAL << endl;
+	cout << "JS    = " << JS << endl;
+	cout << "CMD   = " << CMD << endl;
+	cout << "EXE   = " << EXE << endl;
+	cout << "ERR   = " << ERR << endl;
 
 	return 0;
 }
