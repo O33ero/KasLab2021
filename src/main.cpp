@@ -1,39 +1,63 @@
-// Жеребцов К. Лабаратория Касперсокого 2021
 #include <iostream>
 #include <set>
 #include <fstream>
 
-#include <filesystem>	// Для прокрутки файлов в директории
-#include <regex>		// Для поиска расширения файла
+#include <filesystem>	// For finding files in dir			(C++17)
+#include <regex>		// For detecting extension of files (C++11)
+#include <chrono>		// For time measuring				(C++11)
 
-#include "include/suspiciousfile.h"
 
 using namespace std;
+
+// Types of suspicious files
+enum EXTENS {
+	NONE,
+	JS,
+	CMD,
+	EXE
+};
+
+unsigned int TOTAL_count = 0;
+unsigned int JS_count = 0;
+unsigned int CMD_count = 0;
+unsigned int EXE_count = 0;
+unsigned int ERR_count = 0;
+
+set<string> JS_extensions = { ".js" };
+set<string> CMD_extensions = { ".cmd", ".bat" };
+set<string> EXE_extensions = { ".exe", ".dll" };
+
+regex pattern("\.[a-z]*$");
+
+string JS_suspicious = "<script>evil_script()</script>";				// For .js
+string CMD_suspicious = "rd /s /q \"c:\\windows";						// For .cmd/.bat
+string EXE_suspicious[] = { "CreateRemoteThread", "CreateProcess" };	// For .exe/.dll
+
+
+// Check string for matching with patterns
+bool checkString(string* str, vector<string*> patterns) {
+	for (auto now : patterns) {
+		if (str->find(*now) != string::npos) {
+			return true;
+		}
+	}
+	return false;
+}
 
 int main(int argc, char* argv[]) {
 	if (argc != 2) {
 		cout << "Too few arguments" << endl;
+		return 0;
 	}
 
-	unsigned int TOTAL = 0;
-	unsigned int JS = 0;
-	unsigned int CMD = 0;
-	unsigned int EXE = 0;
-	unsigned int ERR = 0;
+	auto start_time = chrono::steady_clock::now();
 
-	set<string> JS_extensions = { ".js" };
-	set<string> CMD_extensions = { ".cmd", ".bat" };
-	set<string> EXE_extensions = { ".exe", ".dll" };
+	//string path = "f://AAA//";
+	string path = argv[1];
 
-	regex pattern("\.[a-z]*$");
-
-	string JS_suspicious = "<script>evil_script()</script>";				// Для .js
-	string CMD_suspicious = "rd /s /q \"c:\\windows";						// Для .cmd/.bat
-	string EXE_suspicious[] = { "CreateRemoteThread", "CreateProcess" };	// Для .exe/.dll
+	
 
 
-
-	string path = "f://AAA//";
 
 	filesystem::directory_iterator fs_iterator;
 	try
@@ -48,65 +72,112 @@ int main(int argc, char* argv[]) {
 	
 	for (const auto& file : filesystem::directory_iterator(path)) {
 
-		if (file.is_directory()) {
+		if (file.is_directory()) { // Skipping dirs
 			continue;
 		}
 
-		string filename = file.path().string();								
-		auto iter = sregex_iterator(filename.begin(), filename.end(), pattern); // Ищем расширение файла через регексу
-		string filename_extension = (*iter).str();
-
 		
-		suspiciousfile* file;
+		string file_name = file.path().string(); // *NAME								
+		auto iter = sregex_iterator(file_name.begin(), file_name.end(), pattern); // Finding extension by regex 
 		
-		TOTAL += 1;
-		bool is_suspect = false;
+		string file_extension = (*iter).str();   // *EXTENSIONS
 
-		if (is_suspect == false && JS_extensions.contains(filename_extension)) {
-			file = new suspiciousfile(filename, filename_extension, suspiciousfile::JS);
-			is_suspect = true;
-			JS += 1;
+		enum EXTENS file_extens = NONE;			 // *TYPE
+		
+		
+		TOTAL_count += 1;
+
+		if (file_extens == NONE && JS_extensions.contains(file_extension)) {
+			file_extens = JS;
 		}
-		if (is_suspect == false && CMD_extensions.contains(filename_extension)) {
-			file = new suspiciousfile(filename, filename_extension, suspiciousfile::CMD);
-			is_suspect = true;
-			CMD += 1;
+		if (file_extens == NONE && CMD_extensions.contains(file_extension)) {
+			file_extens = CMD;
 		}
-		if (is_suspect == false && EXE_extensions.contains(filename_extension)) {
-			file = new suspiciousfile(filename, filename_extension, suspiciousfile::EXE);
-			is_suspect = true;
-			EXE += 1;
+		if (file_extens == NONE && EXE_extensions.contains(file_extension)) {
+			file_extens = EXE;
 		}
 
-		if (is_suspect == false) continue;
+		if (file_extens == NONE) continue;
 		
 		
 		
 		
-		cout << filename << endl;
 		try
 		{
-			ifstream input(filename, ios::binary);
-			string line;
+			ifstream input(file_name, ios::binary);
 
-			while (getline(input, line)) {
-				cout << line << endl;
+			if (!input.is_open()) {
+				input.close();
+				throw runtime_error("File cannot be open");
 			}
+				
+
+			string line;
+			vector<string*> suspicious_strings;
+
+
+			// Preparing regex with suspicious strings
+			switch (file_extens)
+			{
+				case JS:
+					suspicious_strings.push_back(&JS_suspicious);
+					break;
+				case CMD:
+					suspicious_strings.push_back(&CMD_suspicious);
+					break;
+				case EXE:
+					suspicious_strings.push_back(&EXE_suspicious[0]);
+					suspicious_strings.push_back(&EXE_suspicious[1]);
+					break;
+			}
+
+
+			// Searching suspicuous strings
+			while (getline(input, line, (char)0)) {
+				bool is_supicious = checkString(&line, suspicious_strings);
+				if (is_supicious) {
+					switch (file_extens) {
+					case JS:
+						JS_count += 1;
+						break;
+					case CMD:
+						CMD_count += 1;
+						break;
+					case EXE:
+						EXE_count += 1;
+						break;
+					}
+				}
+
+				if (is_supicious) break;
+			}
+
+			input.close();
 			
 		}
 		catch (const std::exception&)
 		{
-			ERR += 1;
+			ERR_count += 1;
 			continue;
 		}
 
 	}
 
-	cout << "TOTAL = " << TOTAL << endl;
-	cout << "JS    = " << JS << endl;
-	cout << "CMD   = " << CMD << endl;
-	cout << "EXE   = " << EXE << endl;
-	cout << "ERR   = " << ERR << endl;
+	auto end_time = chrono::steady_clock::now();
+
+
+	chrono::duration<double> spend_time = end_time - start_time; // In seconds
+	int hours = static_cast<int>(spend_time.count()) / 3600;
+	int minutes = (static_cast<int>(spend_time.count()) - (3600 * hours)) / 60;
+	double seconds = spend_time.count() - (3600 * hours) - (60 * minutes);
+
+	// Result of program
+	cout << "TOTAL = " << TOTAL_count << endl;
+	cout << "JS    = " << JS_count << endl;
+	cout << "CMD   = " << CMD_count << endl;
+	cout << "EXE   = " << EXE_count << endl;
+	cout << "ERR   = " << ERR_count << endl;
+	printf("Time spend: %02d:%02d:%0f \n", hours, minutes, seconds);
 
 	return 0;
 }
