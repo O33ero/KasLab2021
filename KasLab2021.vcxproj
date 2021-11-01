@@ -23,7 +23,7 @@
     <ProjectGuid>{274873CE-5A7E-4926-AE63-3A9F770B7CFF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>sqan_util</ProjectName>
+    <ProjectName>scan_util</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
