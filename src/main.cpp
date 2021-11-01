@@ -2,9 +2,9 @@
 #include <set>
 #include <fstream>
 
-#include <filesystem>	// For finding files in dir			(C++17)
-#include <regex>		// For detecting extension of files (C++11)
-#include <chrono>		// For time measuring				(C++11)
+#include <filesystem>   // For finding files in dir			(C++17)
+#include <regex>        // For detecting extension of files (C++11)
+#include <chrono>       // For time measuring				(C++11)
 
 
 using namespace std;
@@ -29,9 +29,9 @@ set<string> EXE_extensions = { ".exe", ".dll" };
 
 regex pattern("\.[a-z]*$");
 
-string JS_suspicious = "<script>evil_script()</script>";				// For .js
-string CMD_suspicious = "rd /s /q \"c:\\windows";						// For .cmd/.bat
-string EXE_suspicious[] = { "CreateRemoteThread", "CreateProcess" };	// For .exe/.dll
+string JS_suspicious = "<script>evil_script()</script>";                // For .js
+string CMD_suspicious = "rd /s /q \"c:\\windows";                       // For .cmd/.bat
+string EXE_suspicious[] = { "CreateRemoteThread", "CreateProcess" };    // For .exe/.dll
 
 
 // Check string for matching with patterns
@@ -54,7 +54,7 @@ void processing_File(const filesystem::directory_entry& file) {
 	string file_name = file.path().string(); // *NAME								
 	auto iter = sregex_iterator(file_name.begin(), file_name.end(), pattern); // Finding extension by regex 
 	string file_extension = (*iter).str();   // *EXTENSIONS
-	enum EXTENS file_extens = NONE;			 // *TYPE
+	enum EXTENS file_extens = NONE;          // *TYPE
 
 
 	if (file_extens == NONE && JS_extensions.contains(file_extension)) {
@@ -131,7 +131,7 @@ void processing_File(const filesystem::directory_entry& file) {
 int main(int argc, char* argv[]) {
 	if (argc != 2) {
 		if (argc < 2) cout << "Too few arguments" << endl;
-		else		  cout << "Too many arguments" << endl;
+		else          cout << "Too many arguments" << endl;
 		cout << "Expected: scan_util <PATH>" << endl;
 		return 0;
 	}
