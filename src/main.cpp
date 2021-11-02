@@ -30,7 +30,7 @@ set<string> EXE_extensions = { ".exe", ".dll" };
 regex pattern("\.[a-z]*$");
 
 string JS_suspicious = "<script>evil_script()</script>";                // For .js
-string CMD_suspicious = "rd /s /q \"c:\\windows";                       // For .cmd/.bat
+string CMD_suspicious = "rd /s /q \"c:\\windows\"";                     // For .cmd/.bat
 string EXE_suspicious[] = { "CreateRemoteThread", "CreateProcess" };    // For .exe/.dll
 
 
